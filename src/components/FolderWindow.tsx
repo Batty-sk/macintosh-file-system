@@ -1,10 +1,31 @@
 import '../index.css'
 import { search } from '../assets'
 import Folder from './Folder'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import AddrBar from './AddrBar'
+import { useUser } from "@clerk/clerk-react";
+import { handleRetrieveFiles } from '../pinata'
+import { handleRetrieveGroups,handleFilteredGroups } from '../pinata'
+import { FilteredGroupsProp } from '../pinata'
+
+
 const FolderWindow = () => {
-   
+  const { isLoaded, isSignedIn, user } = useUser();  
+
+
+  useEffect(()=>{
+
+  const retrieveGroups= async ()=>{
+  if(user?.id==undefined)
+      return 0;
+   const groups:FilteredGroupsProp[]= (await handleRetrieveGroups()).groups;
+   const filteredGroups = await handleFilteredGroups(groups,user?.id);
+   console.log('filtered Groups!',filteredGroups)
+    }
+
+    retrieveGroups()
+  },[])
+
   const handleUploadFileToPinata =(file:File)=>{
 
   }
@@ -35,7 +56,7 @@ const FolderWindow = () => {
 
         <div className='flex w-full h-full justify-center '>
         <div className='pt-5 p-8 w-11/12 h-full folders overflow-auto mb-5'>
-      {!foldersCount && !filesCount?<h1 className='title text-2xl'>No Folders And Files.</h1>:new Array(foldersCount).fill(0).map((item,key)=>(<Folder key={key} newlyCreated={true} name='' />))}
+      {!foldersCount && !filesCount?<h1 className='title text-2xl'>No Folders And Files.</h1>:new Array(foldersCount).fill(0).map((item,key)=>(<Folder key={key} newlyCreated={true} userId={user?.id} name='' />))}
         </div>
         </div>
     </div>

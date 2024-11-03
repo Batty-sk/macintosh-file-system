@@ -1,16 +1,26 @@
 import React, { useState } from 'react'
 import { folder,close,correct } from '../assets'
+import { handleCreateGroup } from '../pinata'
+
 
 type Props={
     newlyCreated:boolean,
-    name:string
+    name:string,
+    userId: string|undefined,
 }
-const Folder = ({newlyCreated,name}:Props) => {
+const Folder = ({newlyCreated,name,userId}:Props) => {
+    
     const [isNewlyCreated,updateIsNewlyCreated]=useState(!newlyCreated)
     const [folderName,updateFolderName]=useState('')
 
-    const handleDoneEditing=()=>{
+    const handleDoneEditing=async()=>{
         //we call the pinaata api.
+        if(userId==undefined){
+            console.log('userId is undefined please first sign IN')
+            return 0
+        }
+        const res = await handleCreateGroup({name:userId+folderName})
+        console.log('response',res)
         updateIsNewlyCreated(true)
     }
     
