@@ -10,22 +10,25 @@ import { FilteredGroupsProp } from '../pinata'
 
 
 const FolderWindow = () => {
-  const { isLoaded, isSignedIn, user } = useUser();  
+  const { isLoaded, isSignedIn, user } = useUser(); 
+  const [path,updatePath] = useState("/home") 
+  const [folderDepth,updateFolderDepth]=useState(1)
 
-
+   // if useeffect runs on the clicking on the folder then we can increase the count
+   // this count will restrict the user from creating another folder couwe can display the dialog box modal  
   useEffect(()=>{
-
-  const retrieveGroups= async ()=>{
-  if(user?.id==undefined)
-      return 0;
-   const groups:FilteredGroupsProp[]= (await handleRetrieveGroups()).groups;
-   const filteredGroups = await handleFilteredGroups(groups,user?.id);
-   console.log('filtered Groups!',filteredGroups)
+    const retrieveGroups= async ()=>{
+    if(user?.id==undefined)
+        return 0;
+    const groups = await handleRetrieveGroups()
+    if(groups){
+    const filteredGroups = handleFilteredGroups(groups.groups,user?.id);
+    console.log('filtered Groups!',filteredGroups)
     }
-
-    retrieveGroups()
+      }
+      retrieveGroups()
   },[])
-
+  
   const handleUploadFileToPinata =(file:File)=>{
 
   }
@@ -51,11 +54,12 @@ const FolderWindow = () => {
    
         </div>
         <div className='address-bar'>
-      <AddrBar/>
+      <AddrBar path={path}/>
         </div>
 
         <div className='flex w-full h-full justify-center '>
         <div className='pt-5 p-8 w-11/12 h-full folders overflow-auto mb-5'>
+
       {!foldersCount && !filesCount?<h1 className='title text-2xl'>No Folders And Files.</h1>:new Array(foldersCount).fill(0).map((item,key)=>(<Folder key={key} newlyCreated={true} userId={user?.id} name='' />))}
         </div>
         </div>
