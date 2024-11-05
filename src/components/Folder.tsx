@@ -6,14 +6,25 @@ type Props = {
   newlyCreated: boolean;
   name: string;
   userId: string | undefined;
-  handleSwitchPath:(groupId:string)=>void;
+  handleSwitchPath: (groupId: string) => void;
+  isChecked: boolean;
+  handleCheckOn: (name:string,isFolder:boolean) => void;
+  updateFoldersCount:React.Dispatch<React.SetStateAction<number>>,
 };
-const Folder = ({ newlyCreated, name, userId,handleSwitchPath }: Props) => {
+const Folder = ({
+  newlyCreated,
+  name,
+  userId,
+  handleSwitchPath,
+  isChecked,
+  handleCheckOn,
+  updateFoldersCount
+}: Props) => {
   const [isNewlyCreated, updateIsNewlyCreated] = useState(!newlyCreated);
   const [folderName, updateFolderName] = useState("");
+  const [radioOn, updateRadioOn] = useState<boolean>(isChecked);
 
   const handleDoneEditing = async () => {
-    //we call the pinaata api.
     if (userId == undefined) {
       console.log("userId is undefined please first sign IN");
       return 0;
@@ -24,10 +35,37 @@ const Folder = ({ newlyCreated, name, userId,handleSwitchPath }: Props) => {
   };
   console.log("name", name);
   const handleReset = () => {
+    if(!folderName){
+        updateFoldersCount(0)
+      return 
+
+    }
     updateFolderName("");
   };
+
+  const handleChangeEvent = () => {
+    if (radioOn) {
+      updateRadioOn(false);
+      return;
+    }
+    handleCheckOn(name,true)
+  };
+
   return (
-    <div className="flex items-center " onClick={()=>handleSwitchPath(userId+'|'+name)}>
+    <div
+      className="flex items-center "
+      onClick={() => handleSwitchPath(userId + "|" + name)}
+    >
+      <div className="field-row">
+        <input
+          id="radio1"
+          type="radio"
+          name="first-example"
+          checked={radioOn}
+          onChange={() => handleChangeEvent()}
+        />
+        <label htmlFor="radio1"></label>
+      </div>{" "}
       <img src={folder} alt="folder" height={48} width={48} />
       {!isNewlyCreated ? (
         <>

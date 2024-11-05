@@ -1,5 +1,5 @@
 import { PinataSDK } from "pinata";
-
+import { FileListResponse } from "pinata";
 
 const pinata = new PinataSDK({
   pinataJwt: import.meta.env.VITE_PINATA_JWT!,
@@ -38,14 +38,15 @@ export const handleCreateFileInGroup = async(args:createFileInGroup)=>{
      }
 }
 
-export const handleRetrieveFiles = async(args:createFileInGroup)=>{
-    try{const response = await pinata.files.list().group(args.group_name)
-        console.log("response we got on uploading file ",response)
+export const handleRetrieveFiles = async(group_id:string)=>{
+    try{const response:FileListResponse = await pinata.files.list().group(group_id)
+        console.log("response we got on retrieving the file ",response)
         return response
      
          }
-         catch(e){
+         catch(e:any){
              console.log('error while uploading file',e)
+             throw new Error(e)
          }
 }
 
@@ -53,8 +54,9 @@ export const handleRetrieveGroups=async()=>{
    try{ const groups =await pinata.groups.list()
     return groups
    }
-   catch(e){
+   catch(e:any){
     console.log('error while retriving the groups.')
+    throw new Error(e)
    }
 }
 
