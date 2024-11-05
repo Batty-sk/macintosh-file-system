@@ -8,4 +8,5 @@ import file_explorer from "./file_explorer.png"
 import github from "./github.png"
 import del_icon from "./delete.png"
 import show_property from "./show_property.png"
-export {apple,folder,disk,search,correct,close,file_explorer,github,del_icon,show_property}
+import back from "./back.png"
+export {back,apple,folder,disk,search,correct,close,file_explorer,github,del_icon,show_property}

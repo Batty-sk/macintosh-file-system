@@ -16,10 +16,14 @@ type ChildProp = {
 type ContextProps = {
   Files: FileListItem[];
   Folders: FilteredGroupsProp[];
+  setFolders: React.Dispatch<React.SetStateAction<FilteredGroupsProp[]>>
+  setFiles:React.Dispatch<React.SetStateAction<FileListItem[]>>
 };
 export const F_F_Context = createContext<ContextProps>({
   Files: [],
   Folders: [],
+  setFolders:()=>{},
+  setFiles:()=>{}
 });
 
 export const F_F_Context_Wrapper = ({ children }: ChildProp) => {
@@ -59,7 +63,7 @@ export const F_F_Context_Wrapper = ({ children }: ChildProp) => {
   }, []);
 
   return (
-    <F_F_Context.Provider value={{ Files: Files, Folders: Folders }}>
+    <F_F_Context.Provider value={{ Files: Files, Folders: Folders,setFolders,setFiles }}>
       {children}
     </F_F_Context.Provider>
   );
