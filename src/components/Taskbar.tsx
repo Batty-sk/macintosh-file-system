@@ -1,5 +1,5 @@
 import { useState,useEffect } from 'react';
-import { github } from '../assets'
+import { github,heart } from '../assets'
 import "../index.css"
 const Taskbar = () => {
     const [currentTime, setCurrentTime] = useState(new Date());
@@ -17,16 +17,18 @@ const Taskbar = () => {
     <div className='w-full h-12 flex justify-between items-center p-4 separator bg-white '>
         <div className='flex justify-center items-center'>
         <img src={github} alt="start" height={32} width={32}  className='cursor-pointer'/>
-        <span className='ml-5  title'>
-                      saorav.skumar@gmail.com 💓
-                    </span>
+        <h2 className='ml-5 title flex items-center text-sm'>
+        saorav.skumar@gmail.com  <img src={heart} alt="" height={20} width={30}/>
+
+          </h2>
+
         </div>
         <div>
             <div className=' flex flex-col items-center '>
-                    <span className=' font-semibold title text-sm'>{currentTime.toTimeString().split(' ')[0]
-                    } </span>    
-                    <span className='font-semibold title text-sm'>
-                        {currentTime.toDateString()}</span>  
+                    <h2 className=' title text-sm'>{currentTime.toTimeString().split(' ')[0]
+                    } </h2>    
+                    <h2 className=' title text-sm'>
+                        {currentTime.toDateString()}</h2>  
 
             </div>
         </div>

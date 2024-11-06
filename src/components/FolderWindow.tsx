@@ -118,7 +118,7 @@ const FolderWindow = () => {
           <button
             className="md:ml-4 btn w-36"
             onClick={() => {
-              if(path.path!='/home')
+              if(path.path=='/home')
                   updateFoldersCount(foldersCount + 1);
               return 0
             }}

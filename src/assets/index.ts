@@ -9,4 +9,6 @@ import github from "./github.png"
 import del_icon from "./delete.png"
 import show_property from "./show_property.png"
 import back from "./back.png"
-export {back,apple,folder,disk,search,correct,close,file_explorer,github,del_icon,show_property}
+import heart from "./heart.svg"
+import skull from "./skull.svg"
+export {back,apple,heart,skull,folder,disk,search,correct,close,file_explorer,github,del_icon,show_property}
