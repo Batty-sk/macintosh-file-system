@@ -5,8 +5,9 @@ import { F_F_Context } from '../contexts/FoldersAndFilesContext'
 
 type Prop={
   updateSwitchWindow:React.Dispatch<React.SetStateAction<boolean>>
-}
+} 
 const DiskWindow = ({updateSwitchWindow}:Prop) => {
+  const [mouseDown,updateMouseDown] = useState(false)
   const [totalDiskUsed,updateTotalDiskUsed] = useState(0);
   const {Files} = useContext(F_F_Context)
 
@@ -26,9 +27,9 @@ const DiskWindow = ({updateSwitchWindow}:Prop) => {
 
 
   return (
-    <div className="flex justify-start w-full p-16">
-    <div className="flex w-8/12 btn p-5" onClick={()=>updateSwitchWindow(true)}>
-      <img src={disk} alt="" height={85} width={85} /* style={{filter:'invert()'}} *//>
+    <div className="flex justify-start w-full md:p-16 pt-8 px-2 ">
+    <div className="flex md:w-8/12 w-full btn p-5 items-center" onClick={()=>updateSwitchWindow(true)}>
+      <img src={disk} alt="" className="md:w-20 md:h-14 w-10 h-9 flex " /* style={{filter:'invert()'}} *//>
        <div className="w-full pl-6 flex flex-col  relative ">
         <div className='text-start'>Pinata disk (c)</div>
        <div className='w-full h-6 border border-black'>

@@ -63,7 +63,7 @@ const Folder = ({
         />
         <label htmlFor={id}></label>
       </div>{" "}
-      <img src={folder} alt="folder" height={48} width={48} />
+      <img src={folder} alt="folder" className="md:h-12 md:w-12 h-10 w-10" />
       {!isNewlyCreated ? (
         <>
           <input
@@ -80,20 +80,16 @@ const Folder = ({
           <div className="flex">
             <img
               src={correct}
-              height={20}
-              width={20}
-              alt=""
+              alt="ok"
               onClick={() => {
                 handleDoneEditing();
               }}
-              className="cursor-pointer"
+              className="cursor-pointer md:h-[20px] md:w-[20px] w-4 h-4"
             />
             <img
               src={close}
-              height={20}
-              width={20}
-              alt=""
-              className="ml-2 cursor-pointer"
+              alt="cancel"
+              className="ml-2 cursor-pointer md:h-[20px] md:w-[20px] w-4 h-4"
               onClick={() => {
                 handleReset();
               }}

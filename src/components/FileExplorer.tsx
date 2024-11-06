@@ -2,38 +2,44 @@ import { ReactEventHandler, useState } from "react";
 import "../index.css";
 import DiskWindow from "./DiskWindow";
 import FolderWindow from "./FolderWindow";
+import { user as userImg } from "../assets";
+import { useUser } from "@clerk/clerk-react";
 
 type Prop = {
   updateOpenExplorer: React.Dispatch<React.SetStateAction<boolean>>;
 };
 const FileExplorer = ({ updateOpenExplorer }: Prop) => {
   const [switchWindow, updateSwitchWindow] = useState<boolean>(false);
-  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [position, setPosition] = useState({ x: 0, y: 40 });
   const [dragging, setDragging] = useState(false);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
+  const { isLoaded, isSignedIn, user } = useUser();
 
-  const handleMouseDown = (e: any) => {
+  // Handle mouse or touch down to start dragging
+  const handleDragStart = (e: any) => {
     setDragging(true);
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
     setOffset({
-      x: e.clientX - position.x,
-      y: e.clientY - position.y,
+      x: clientX - position.x,
+      y: clientY - position.y,
     });
-
-    
   };
 
-  // Handle mouse move to update position while dragging
-  const handleMouseMove = (e: any) => {
+  // Handle mouse or touch move to update position while dragging
+  const handleDragMove = (e: any) => {
     if (dragging) {
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
       setPosition({
-        x: e.clientX - offset.x,
-        y: e.clientY - offset.y,
+        x: clientX - offset.x,
+        y: clientY - offset.y,
       });
     }
   };
 
-  // Handle mouse up to stop dragging
-  const handleMouseUp = () => {
+  // Handle mouse or touch end to stop dragging
+  const handleDragEnd = () => {
     setDragging(false);
   };
 
@@ -43,19 +49,22 @@ const FileExplorer = ({ updateOpenExplorer }: Prop) => {
 
   return (
     <div
-      className="w-full h-full flex justify-center"
-      onMouseMove={handleMouseMove}
-      onMouseUp={handleMouseUp}
+      className="w-full h-full flex flex-col"
+      onMouseMove={handleDragMove}
+      onMouseUp={handleDragEnd}
+      onTouchMove={handleDragMove} // Mobile drag move
+      onTouchEnd={handleDragEnd} // Mobile drag end
       style={{
         position: "absolute",
         left: `${position.x}px`,
         top: `${position.y}px`,
       }}
     >
-      <div className="w-4/6 h-[70vh] window scale-down  ">
+      <div className="md:w-4/6 w-5/6 md:h-[70vh] h-[68vh] window scale-down relative">
         <div
           className="title-bar"
-          onMouseDown={handleMouseDown}
+          onMouseDown={handleDragStart}
+          onTouchStart={handleDragStart} // Mobile drag start
           style={{ cursor: "move" }}
         >
           <button
@@ -70,13 +79,20 @@ const FileExplorer = ({ updateOpenExplorer }: Prop) => {
             onClick={handleClose}
           ></button>
         </div>
-
         <div className="separator"></div>
+
         {switchWindow ? (
           <FolderWindow />
         ) : (
           <DiskWindow updateSwitchWindow={updateSwitchWindow} />
         )}
+
+        <div className="absolute bottom-1 right-2">
+          <div className="flex items-center">
+            <img src={userImg} alt="" className="md:h-10 md:w-10 w-9 h-9" />
+            <h2 className="ms-1 md:text-sm text-[13px]">{user?.fullName}</h2>
+          </div>
+        </div>
       </div>
     </div>
   );

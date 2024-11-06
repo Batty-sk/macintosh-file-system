@@ -110,13 +110,22 @@ const FolderWindow = () => {
           handleCancelPopup={handleCancelPopup}
         />
       )}
-      <div className="p-4 flex justify-between items-center">
-        <div className="flex w-11/12">
-          <div>
-            <input className="title text-sm btn" type="file" />
-          </div>
+      <div className="p-4 flex  md:flex-row flex-col justify-between items-center">
+        <div className="flex md:w-11/12 w-full md:justify-start justify-evenly">
+
+          <div className="flex items-center btn md:p-3 p-2 w-32 ">
+          <input
+    id="file-upload"
+    type="file"
+    className="hidden"
+  />
+  <label
+    htmlFor="file-upload"
+    className="title text-sm cursor-pointer  "
+  >Upload A File </label>   
+         </div>
           <button
-            className="md:ml-4 btn w-36"
+            className="md:ml-4 btn md:w-36 w-fit"
             onClick={() => {
               if(path.path=='/home')
                   updateFoldersCount(foldersCount + 1);
@@ -124,24 +133,23 @@ const FolderWindow = () => {
             }}
             disabled={path.path!='/home'}
           >
-            <span className="title  text-sm">Create A Folder</span>
+            <span className="title md:text-sm text-[13px]">Create A Folder</span>
           </button>
         </div>
 
-        <div className="flex w-full items-center justify-end md:me-5">
+        <div className="flex w-full items-center md:justify-end md:me-5 mt-3">
           <img
             src={del_icon}
             alt="delete"
-            
             onClick={handleDelete}
-            className="cursor-pointer h-10 w-10"
+            className="cursor-pointer md:h-10 md:w-10 h-8 w-8"
           ></img>
           <img
             src={show_property}
             alt="properties"
             height={40}
             width={40}
-            className="md:ml-5 ml-1 cursor-pointer h-10 w-10"
+            className="md:ml-5 ml-1 cursor-pointer md:h-10 md:w-10 h-8 w-8"
             onClick={handleShowProp}
           />
         </div>
@@ -181,7 +189,7 @@ const FolderWindow = () => {
               handle_P_CreateGroup={handle_P_CreateGroup}
             />
           ))}
-          {(!tempFiles.length && !tempFolders.length && !foldersCount)?<h1 className="title text-3xl">No Files And Folder Found.</h1>:null}
+          {(!tempFiles.length && !tempFolders.length && !foldersCount)?<h1 className="title md:text-3xl text-2xl">No Files And Folder Found.</h1>:null}
         </div>
       </div>
     </div>
