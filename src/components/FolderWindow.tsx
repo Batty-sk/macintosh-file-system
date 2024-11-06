@@ -4,7 +4,7 @@ import Folder from "./Folder";
 import { useState, useEffect } from "react";
 import AddrBar from "./AddrBar";
 import { useUser } from "@clerk/clerk-react";
-import { handleCreateGroup, handleDeleteGroup } from "../pinata";
+import { handleCreateFileInGroup, handleCreateGroup, handleDeleteGroup } from "../pinata";
 import { useContext } from "react";
 import { F_F_Context } from "../contexts/FoldersAndFilesContext";
 import Diaglog_Box from "./Diaglog_Box";
@@ -18,23 +18,28 @@ type pathProp = {
   path: string;
   group_id: string;
 };
+
+type popUpProp={
+  open:boolean,
+  title:string,
+  handleCancelPopup:()=>void
+handleAccecptPopup:()=>void
+}
 const FolderWindow = () => {
   const { isLoaded, isSignedIn, user } = useUser();
   const [path, updatePath] = useState<pathProp>({
     path: "/home",
     group_id: "",
   });
-  const [popUp, updatePopup] = useState<boolean>(false);
+  const [popUp, updatePopup] = useState<popUpProp>({open:false,title:'',handleCancelPopup:()=>{},handleAccecptPopup:()=>{}});
   const [selectedNameId, updateSelectedNameId] = useState<selectedNameIdProp>({
     Name_Id: "",
     isFolder: false,
   });
   const { Folders, Files } = useContext(F_F_Context);
-  const [tempFolders,setFolders] = useState(Folders)
-  const [tempFiles,setFiles] = useState(Files)
+  const [tempFolders, setFolders] = useState(Folders);
+  const [tempFiles, setFiles] = useState(Files);
   const [foldersCount, updateFoldersCount] = useState(0);
-
-  const handleUploadFileToPinata = (file: File) => {};
 
 
   const handleSwitchPath = (folderName: string, id: string) => {
@@ -63,7 +68,7 @@ const FolderWindow = () => {
 
   const handleDelete = () => {
     console.log("selected Name Id", selectedNameId);
-    if (selectedNameId.Name_Id) updatePopup(true);
+    if (selectedNameId.Name_Id) updatePopup({open:true,title:"You Sure Wanna Delete That? This Action Is Non-reversable",handleCancelPopup:handleCancelPopup,handleAccecptPopup:handleAccecptPopup});
   };
 
   const handleShowProp = () => {};
@@ -76,64 +81,94 @@ const FolderWindow = () => {
         (item, index) => item.id != selectedNameId.Name_Id
       );
       setFolders(updated_folders);
-      updatePopup(false);
+      updatePopup({open:false,title:'',handleCancelPopup:()=>{},handleAccecptPopup:()=>{}});
     } else {
     }
   };
 
   const handleCancelPopup = () => {
-    updatePopup(false);
+    updatePopup({open:false,title:'',handleCancelPopup:()=>{},handleAccecptPopup:()=>{}});
   };
 
-  const handleBackPath = () =>{
-      updatePath({path:'/home',group_id:''})
-  }
+  const handleBackPath = () => {
+    updatePath({ path: "/home", group_id: "" });
+  };
 
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const MAX_FILE_SIZE = 5 * 1024 * 1024;
+
+    const file = event.target.files?.[0];
+
+    if (file && file.size > MAX_FILE_SIZE) {
+      updatePopup({open:true,title:"MAX_SIZE LIMIT EXCEED",handleCancelPopup:handleCancelPopup,handleAccecptPopup:handleCancelPopup})
+      return;
+    }
+    if(!user) // it means the user is undefined.
+        return 
+    const folder = Folders.filter((item,index)=>item.name == user.id)
+    console.log('folder',folder)
+    if(!folder.length)
+        return
+    
+    if (file) {
+      console.log('uploading...')
+     try{ const response = await handleCreateFileInGroup({
+        file,
+        group_name: path.path=='/home'?folder[0].id:path.group_id,
+      });
+      if(response)
+        tempFiles.push(response)
+      console.log("Upload response:", response);
+    }
+    catch(e){
+        updatePopup({title:"Error While Uploading A File. Please Try Again",open:true,handleAccecptPopup:handleCancelPopup,handleCancelPopup:handleCancelPopup})
+    }
+    }
+  };
+  
   useEffect(() => {
-    if (path.path == '/home')
-        {
-          setFolders(Folders)
-          setFiles(Files)
-          return
-        }
+    if (path.path == "/home") {
+      setFolders(Folders);
+      setFiles(Files);
+      return;
+    }
     if (!path.group_id) return;
     const Temp = tempFiles.filter((item, i) => item.group_id == path.group_id);
     setFiles((prev) => [...prev, ...Temp]);
-    setFolders([])
+    setFolders([]);
   }, [path]);
 
   return (
     <div className="w-full h-full relative">
-      {popUp && (
+      {popUp.open && (
         <Diaglog_Box
-          handleAccecptPopup={handleAccecptPopup}
-          handleCancelPopup={handleCancelPopup}
+          title={popUp.title}
+          handleAccecptPopup={popUp.handleAccecptPopup}
+          handleCancelPopup={popUp.handleCancelPopup}
         />
       )}
       <div className="p-4 flex  md:flex-row flex-col justify-between items-center">
         <div className="flex md:w-11/12 w-full md:justify-start justify-evenly">
-
           <div className="flex items-center btn md:p-3 p-2 w-32 ">
-          <input
-    id="file-upload"
-    type="file"
-    className="hidden"
-  />
-  <label
-    htmlFor="file-upload"
-    className="title text-sm cursor-pointer  "
-  >Upload A File </label>   
-         </div>
+            <input id="file-upload" type="file" className="hidden" onChange={handleFileChange}/>
+            <label
+              htmlFor="file-upload"
+              className="title text-sm cursor-pointer  "
+            >
+              Upload A File{" "}
+            </label>
+          </div>
           <button
             className="md:ml-4 btn md:w-36 w-fit"
             onClick={() => {
-              if(path.path=='/home')
-                  updateFoldersCount(foldersCount + 1);
-              return 0
+              if (path.path == "/home") updateFoldersCount(foldersCount + 1);
+              return 0;
             }}
-            disabled={path.path!='/home'}
+            disabled={path.path != "/home"}
           >
-            <span className="title md:text-sm text-[13px]">Create A Folder</span>
+            <span className="title md:text-sm text-[13px]">
+              Create A Folder
+            </span>
           </button>
         </div>
 
@@ -159,22 +194,27 @@ const FolderWindow = () => {
       </div>
       <div className="flex w-full h-full justify-between ">
         <div className="pt-5 p-8 min-w-80 w-auto md:h-3/5 h-4/5 folders overflow-auto overflow-x-hidden  mb-5">
-          {tempFolders.map((item, index) => (
-            <Folder
-              key={item.id}
-              id={item.id}
-              newlyCreated={false}
-              userId={user?.id}
-              name={item.name}
-              handleSwitchPath={handleSwitchPath}
-              isChecked={
-                selectedNameId.Name_Id == item.id && selectedNameId.isFolder
-              }
-              handleCheckOn={handleCheckOn}
-              updateFoldersCount={updateFoldersCount}
-              handle_P_CreateGroup={handle_P_CreateGroup}
-            />
-          ))}
+          {tempFolders.map((item, index) => {
+            if (item.name == user?.id) {
+              return null;
+            }
+            return (
+              <Folder
+                key={item.id}
+                id={item.id}
+                newlyCreated={false}
+                userId={user?.id}
+                name={item.name}
+                handleSwitchPath={handleSwitchPath}
+                isChecked={
+                  selectedNameId.Name_Id == item.id && selectedNameId.isFolder
+                }
+                handleCheckOn={handleCheckOn}
+                updateFoldersCount={updateFoldersCount}
+                handle_P_CreateGroup={handle_P_CreateGroup}
+              />
+            );
+          })}
           {new Array(foldersCount).fill(0).map((item, key) => (
             <Folder
               key={`key`}
@@ -189,7 +229,11 @@ const FolderWindow = () => {
               handle_P_CreateGroup={handle_P_CreateGroup}
             />
           ))}
-          {(!tempFiles.length && !tempFolders.length && !foldersCount)?<h1 className="title md:text-3xl text-2xl">No Files And Folder Found.</h1>:null}
+          {!tempFiles.length && !tempFolders.length && !foldersCount ? (
+            <h1 className="title md:text-3xl text-2xl">
+              No Files And Folder Found.
+            </h1>
+          ) : null}
         </div>
       </div>
     </div>

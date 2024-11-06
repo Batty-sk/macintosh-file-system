@@ -1,14 +1,26 @@
 import { createContext } from "react";
 import { ReactNode, useState, useEffect } from "react";
 import { useUser } from "@clerk/clerk-react";
-import { FilteredGroupsProp } from "../pinata";
-import { FileListItem } from "pinata";
+import { FilteredGroupsProp, handleCreateGroup } from "../pinata";
 
 import {
   handleRetrieveFiles,
   handleRetrieveGroups,
   handleFilteredGroups,
 } from "../pinata";
+
+
+type FileListItem = {
+  id: string;
+  name: string | null;
+  cid: "pending" | string;
+  size: number;
+  number_of_files: number;
+  mime_type: string;
+  keyvalues?: Record<string, string>;
+  group_id: string | null;
+  created_at: string;
+}
 
 type ChildProp = {
   children: ReactNode;
@@ -41,6 +53,18 @@ export const F_F_Context_Wrapper = ({ children }: ChildProp) => {
           G_Data.groups,
           user?.id
         );
+        if(!Filtered_G_Data.length){
+          //this means there is no root folder
+          try{
+            const data=await handleCreateGroup({name:user.id})
+            if(data)
+              Filtered_G_Data.push(data)
+            }
+          catch{
+            console.log('something went wrong while creating the root folder ')
+            
+          }
+        }
         let FILES: FileListItem[] = [];
 
         await Promise.all(
