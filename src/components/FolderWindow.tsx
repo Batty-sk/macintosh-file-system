@@ -13,6 +13,8 @@ import File from "./File";
 import { useContext } from "react";
 import { F_F_Context } from "../contexts/FoldersAndFilesContext";
 import Diaglog_Box from "./Diaglog_Box";
+import { GroupResponseItem } from "pinata";
+
 
 type selectedNameIdProp = {
   Name_Id: string;
@@ -47,10 +49,10 @@ const FolderWindow = () => {
     Name_Id: "",
     isFolder: false,
   });
-  const { Folders, Files } = useContext(F_F_Context);
-  const [tempFolders, setFolders] = useState(Folders);
-  const [tempFiles, setFiles] = useState(Files);
+  const { Folders, Files,setFolders,setFiles } = useContext(F_F_Context);
   const [foldersCount, updateFoldersCount] = useState(0);
+const [root,setRoot] = useState<GroupResponseItem|null>(null)
+
 
   const handleSwitchPath = (folderName: string, id: string) => {
     //fetch the folders.
@@ -93,7 +95,7 @@ const FolderWindow = () => {
     if (selectedNameId.isFolder) {
       const res = await handleDeleteGroup(selectedNameId.Name_Id);
       console.log("response we got", res);
-      const updated_folders = tempFolders.filter(
+      const updated_folders = Folders.filter(
         (item) => item.id != selectedNameId.Name_Id
       );
       setFolders(updated_folders);
@@ -117,7 +119,13 @@ const FolderWindow = () => {
   };
 
   const handleBackPath = () => {
-    updatePath({ path: "/home", group_id: "" });
+    if(root)
+    updatePath({ path: "/home", group_id: root.id });
+  else{
+    const folder = Folders.filter((item) => item.name == user?.id);
+    updatePath({ path: "/home", group_id:folder[0].id
+    });
+  }
   };
 
   const handleFileChange = async (
@@ -164,21 +172,13 @@ const FolderWindow = () => {
   };
 
   useEffect(() => {
-    if (path.path == "/home") {
-      const folder = Folders.filter((item) => item.name == user?.id);
+      const folder = Folders.filter((item) => item.name == user?.id)[0]
       console.log('folder',folder)
-      const Temp = Files.filter((item) => item.group_id == folder[0].id);
-      setFiles(Temp);
-      setFolders(Folders);
-      console.log('temp',Temp )
-      console.log('running...')
-      return;
-    }
-    if (!path.group_id) return;
-    const Temp = Files.filter((item) => item.group_id == path.group_id);
-    setFiles(Temp);
-    setFolders([]);
-  }, [path]);
+      setRoot(folder);
+      if(root)
+        updatePath({path:'/home',group_id:folder?.id})
+      console.log('setting root',root)
+  }, []);
 
   return (
     <div className="w-full h-full relative">
@@ -241,7 +241,7 @@ const FolderWindow = () => {
       </div>
       <div className="flex w-full h-full justify-between ">
         <div className="pt-5 p-8 min-w-80 w-auto md:h-3/5 h-4/5 folders overflow-auto overflow-x-hidden  mb-5">
-          {tempFolders.map((item) => {
+          {path.path=='/home' && Folders.map((item) => {
             if (item.name == user?.id) {
               return null;
             }
@@ -277,8 +277,10 @@ const FolderWindow = () => {
             />
           ))}
 
-          {tempFiles.map((item) => (
-            <File
+          {Files.map((item) => {
+            console.log('pathgroupid',path.group_id)
+            if(item.group_id == path.group_id)
+              return (<File
               handleCheckOn={handleCheckOn}
               id={item.id}
               fileName={item.name}
@@ -287,9 +289,11 @@ const FolderWindow = () => {
                 selectedNameId.Name_Id == item.id && !selectedNameId.isFolder
               }
               cid={item.cid}
-            />
-          ))}
-          {!tempFiles.length && !tempFolders.length && !foldersCount ? (
+            />)
+            else null;
+          }
+          )}
+          {!Files.length && Folders.length==1 && !foldersCount ? (
             <h1 className="title md:text-3xl text-2xl">
               No Files And Folder Found.
             </h1>

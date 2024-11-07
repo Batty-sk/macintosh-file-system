@@ -1,5 +1,6 @@
 import { PinataSDK } from "pinata";
 import { FileListResponse } from "pinata";
+import { GroupResponseItem } from "pinata";
 
 const pinata = new PinataSDK({
   pinataJwt: import.meta.env.VITE_PINATA_JWT!,
@@ -71,14 +72,9 @@ export const handleRetrieveGroups = async () => {
   }
 };
 
-export type FilteredGroupsProp = {
-  id: string;
-  name: string;
-  is_public: boolean;
-  created_at?: string;
-};
+
 export const handleFilteredGroups = (
-  groups: FilteredGroupsProp[],
+  groups: GroupResponseItem[],
   userId: string
 ) => {
   return groups.filter((item, index) => item.name.startsWith(userId));
