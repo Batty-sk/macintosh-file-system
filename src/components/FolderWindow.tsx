@@ -1,20 +1,22 @@
-import "../index.css";
-import { del_icon, show_property } from "../assets";
-import Folder from "./Folder";
 import { useState, useEffect } from "react";
-import AddrBar from "./AddrBar";
+
 import { useUser } from "@clerk/clerk-react";
 import {
   handleCreateFileInGroup,
   handleCreateGroup,
   handleDeleteGroup,
+  handleDeleteFile,
 } from "../pinata";
+import AddrBar from "./AddrBar";
+
 import File from "./File";
 import { useContext } from "react";
 import { F_F_Context } from "../contexts/FoldersAndFilesContext";
 import Diaglog_Box from "./Diaglog_Box";
 import { GroupResponseItem } from "pinata";
-
+import "../index.css";
+import { del_icon, show_property,loading } from "../assets";
+import Folder from "./Folder";
 
 type selectedNameIdProp = {
   Name_Id: string;
@@ -49,10 +51,10 @@ const FolderWindow = () => {
     Name_Id: "",
     isFolder: false,
   });
-  const { Folders, Files,setFolders,setFiles } = useContext(F_F_Context);
+  const { Folders, Files, setFolders, setFiles } = useContext(F_F_Context);
   const [foldersCount, updateFoldersCount] = useState(0);
-const [root,setRoot] = useState<GroupResponseItem|null>(null)
-
+  const [root, setRoot] = useState<GroupResponseItem | null>(null);
+  const [loader,updateLoader] = useState<boolean>(false)
 
   const handleSwitchPath = (folderName: string, id: string) => {
     //fetch the folders.
@@ -64,10 +66,12 @@ const [root,setRoot] = useState<GroupResponseItem|null>(null)
   const handle_P_CreateGroup = async (folderName: string) => {
     if (user == undefined) return;
     try {
+      updateLoader(true)
       const response = await handleCreateGroup({
         name: user?.id + "|" + folderName,
       });
       if (response) setFolders((prev) => [...prev, response]); // update the folders lisging
+      updateLoader(false)
     } catch (e) {
       console.log("error happend while creating group", e);
     }
@@ -106,6 +110,19 @@ const [root,setRoot] = useState<GroupResponseItem|null>(null)
         handleAccecptPopup: () => {},
       });
     } else {
+      const res = await handleDeleteFile(path.group_id, selectedNameId.Name_Id);
+      if (res) {
+        const Temp = Files.filter((item) => item.id != selectedNameId.Name_Id);
+        setFiles(Temp);
+        updatePopup({
+          open: false,
+          title: "",
+          handleCancelPopup: () => {},
+          handleAccecptPopup: () => {},
+        });
+      } else {
+        console.log("error while deleting the file");
+      }
     }
   };
 
@@ -119,13 +136,11 @@ const [root,setRoot] = useState<GroupResponseItem|null>(null)
   };
 
   const handleBackPath = () => {
-    if(root)
-    updatePath({ path: "/home", group_id: root.id });
-  else{
-    const folder = Folders.filter((item) => item.name == user?.id);
-    updatePath({ path: "/home", group_id:folder[0].id
-    });
-  }
+    if (root) updatePath({ path: "/home", group_id: root.id });
+    else {
+      const folder = Folders.filter((item) => item.name == user?.id);
+      updatePath({ path: "/home", group_id: folder[0].id });
+    }
   };
 
   const handleFileChange = async (
@@ -153,16 +168,18 @@ const [root,setRoot] = useState<GroupResponseItem|null>(null)
 
     if (file) {
       console.log("uploading...");
+      updateLoader(true)
       try {
         const response = await handleCreateFileInGroup({
           file,
           group_name: path.path == "/home" ? folder[0].id : path.group_id,
         });
-        if (response) setFiles(prev=>[...prev,response]);
+        if (response) setFiles((prev) => [...prev, response]);
         console.log("Upload response:", response);
+        updateLoader(false)
       } catch (e) {
         updatePopup({
-          title: "Error While Uploading A File. Please Try Again",
+          title: "Error While Creating A File. Please Try Again",
           open: true,
           handleAccecptPopup: handleCancelPopup,
           handleCancelPopup: handleCancelPopup,
@@ -172,13 +189,12 @@ const [root,setRoot] = useState<GroupResponseItem|null>(null)
   };
 
   useEffect(() => {
-      const folder = Folders.filter((item) => item.name == user?.id)[0]
-      console.log('folder',folder)
-      setRoot(folder);
-      if(root)
-        updatePath({path:'/home',group_id:folder?.id})
-      console.log('setting root',root)
-  }, []);
+    const folder = Folders.filter((item) => item.name == user?.id)[0];
+    console.log("folder", folder);
+    setRoot(folder);
+    if (folder) updatePath({ path: "/home", group_id: folder?.id });
+    console.log("setting root", root);
+  }, [user?.id]);
 
   return (
     <div className="w-full h-full relative">
@@ -192,7 +208,8 @@ const [root,setRoot] = useState<GroupResponseItem|null>(null)
       <div className="p-4 flex  md:flex-row flex-col justify-between items-center">
         <div className="flex md:w-11/12 w-full md:justify-start justify-evenly">
           <div className="flex items-center btn md:p-3 p-2 w-32 ">
-            <input
+            {loader?<img src={loading} alt="" className="animate-spin" />:
+        <>   <input
               id="file-upload"
               type="file"
               className="hidden"
@@ -204,6 +221,8 @@ const [root,setRoot] = useState<GroupResponseItem|null>(null)
             >
               Upload A File
             </label>
+            </> 
+}
           </div>
           <button
             className="md:ml-4 btn md:w-36 w-fit"
@@ -214,7 +233,8 @@ const [root,setRoot] = useState<GroupResponseItem|null>(null)
             disabled={path.path != "/home"}
           >
             <span className="title md:text-sm text-[13px]">
-              Create A Folder
+              {loader?<img src={loading} alt="" className="animate-spin" />:
+             <>Create A Folder</> }
             </span>
           </button>
         </div>
@@ -241,28 +261,29 @@ const [root,setRoot] = useState<GroupResponseItem|null>(null)
       </div>
       <div className="flex w-full h-full justify-between ">
         <div className="pt-5 p-8 min-w-80 w-auto md:h-3/5 h-4/5 folders overflow-auto overflow-x-hidden  mb-5">
-          {path.path=='/home' && Folders.map((item) => {
-            if (item.name == user?.id) {
-              return null;
-            }
-            return (
-              <Folder
-                key={item.id}
-                id={item.id}
-                newlyCreated={false}
-                userId={user?.id}
-                name={item.name}
-                handleSwitchPath={handleSwitchPath}
-                isChecked={
-                  selectedNameId.Name_Id == item.id && selectedNameId.isFolder
-                }
-                handleCheckOn={handleCheckOn}
-                updateFoldersCount={updateFoldersCount}
-                handle_P_CreateGroup={handle_P_CreateGroup}
-              />
-            );
-          })}
-          {new Array(foldersCount).fill(0).map((item, key) => (
+          {path.path == "/home" &&
+            Folders.map((item) => {
+              if (item.name == user?.id) {
+                return null;
+              }
+              return (
+                <Folder
+                  key={item.id}
+                  id={item.id}
+                  newlyCreated={false}
+                  userId={user?.id}
+                  name={item.name}
+                  handleSwitchPath={handleSwitchPath}
+                  isChecked={
+                    selectedNameId.Name_Id == item.id && selectedNameId.isFolder
+                  }
+                  handleCheckOn={handleCheckOn}
+                  updateFoldersCount={updateFoldersCount}
+                  handle_P_CreateGroup={handle_P_CreateGroup}
+                />
+              );
+            })}
+          {new Array(foldersCount).fill(0).map((_, key) => (
             <Folder
               key={`key`}
               id={`${key}`}
@@ -278,22 +299,25 @@ const [root,setRoot] = useState<GroupResponseItem|null>(null)
           ))}
 
           {Files.map((item) => {
-            console.log('pathgroupid',path.group_id)
-            if(item.group_id == path.group_id)
-              return (<File
-              handleCheckOn={handleCheckOn}
-              id={item.id}
-              fileName={item.name}
-              mimeType={item.mime_type}
-              isChecked={
-                selectedNameId.Name_Id == item.id && !selectedNameId.isFolder
-              }
-              cid={item.cid}
-            />)
+            console.log("pathgroupid", path.group_id);
+            if (item.group_id == path.group_id)
+              return (
+                <File
+                  key={item.id}
+                  handleCheckOn={handleCheckOn}
+                  id={item.id}
+                  fileName={item.name}
+                  mimeType={item.mime_type}
+                  isChecked={
+                    selectedNameId.Name_Id == item.id &&
+                    !selectedNameId.isFolder
+                  }
+                  cid={item.cid}
+                />
+              );
             else null;
-          }
-          )}
-          {!Files.length && Folders.length==1 && !foldersCount ? (
+          })}
+          {!Files.length && Folders.length == 1 && !foldersCount ? (
             <h1 className="title md:text-3xl text-2xl">
               No Files And Folder Found.
             </h1>

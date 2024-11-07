@@ -1,7 +1,8 @@
 import { createContext } from "react";
 import { ReactNode, useState, useEffect } from "react";
 import { useUser } from "@clerk/clerk-react";
-import { FilteredGroupsProp, handleCreateGroup } from "../pinata";
+import { handleCreateGroup } from "../pinata";
+import { GroupResponseItem } from "pinata";
 
 import {
   handleRetrieveFiles,
@@ -27,8 +28,8 @@ type ChildProp = {
 };
 type ContextProps = {
   Files: FileListItem[];
-  Folders: FilteredGroupsProp[];
-  setFolders: React.Dispatch<React.SetStateAction<FilteredGroupsProp[]>>
+  Folders: GroupResponseItem[];
+  setFolders: React.Dispatch<React.SetStateAction<GroupResponseItem[]>>
   setFiles:React.Dispatch<React.SetStateAction<FileListItem[]>>
 };
 export const F_F_Context = createContext<ContextProps>({
@@ -41,7 +42,7 @@ export const F_F_Context = createContext<ContextProps>({
 export const F_F_Context_Wrapper = ({ children }: ChildProp) => {
   const { isLoaded, isSignedIn, user } = useUser();
 
-  const [Folders, setFolders] = useState<FilteredGroupsProp[]>([]);
+  const [Folders, setFolders] = useState<GroupResponseItem[]>([]);
   const [Files, setFiles] = useState<FileListItem[]>([]);
 
   useEffect(() => {
@@ -49,7 +50,7 @@ export const F_F_Context_Wrapper = ({ children }: ChildProp) => {
       try {
         const G_Data = await handleRetrieveGroups();
         if (user == undefined) throw new Error("user not found!");
-        const Filtered_G_Data: FilteredGroupsProp[] = handleFilteredGroups(
+        const Filtered_G_Data: GroupResponseItem[] = handleFilteredGroups(
           G_Data.groups,
           user?.id
         );

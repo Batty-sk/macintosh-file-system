@@ -55,7 +55,7 @@ const DiskWindow = ({ updateSwitchWindow }: Prop) => {
           </div>
           <div className="pt-2 flex justify-start">
             <span className="title text-sm font-semibold">
-              Used {(totalDiskUsed / 1073741824).toFixed(2)} GB of 1 GB
+              Used {(totalDiskUsed / 1073741824).toFixed(5)} GB of 1 GB
             </span>
           </div>
         </div>

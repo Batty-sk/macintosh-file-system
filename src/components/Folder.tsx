@@ -28,6 +28,7 @@ const Folder = ({
 
   const handleDoneEditing = async () => {
       handle_P_CreateGroup(folderName);
+      updateFoldersCount(0)
   };
 
   console.log("name", name);

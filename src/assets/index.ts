@@ -15,4 +15,5 @@ import txt from "./txt.png"
 import user from "./user.png"
 import jpg from "./jpg.png"
 import file from "./file.png"
-export {file,user,back,heart,skull,folder,disk,correct,close,file_explorer,github,del_icon,show_property,png,pdf,txt,jpg}
+import loading from "./loading.png"
+export {loading,file,user,back,heart,skull,folder,disk,correct,close,file_explorer,github,del_icon,show_property,png,pdf,txt,jpg}

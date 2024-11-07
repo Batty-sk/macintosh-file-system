@@ -36,6 +36,22 @@ export const handleDeleteGroup = async (GroupId: string) => {
     console.log("error while deleting a group", e);
   }
 };
+
+export const handleDeleteFile = async (groupId: string,fileId:string) => {
+  try {
+    const group = await pinata.groups.removeFiles({
+      groupId:groupId,
+      files: [
+        fileId,
+      ],
+    });
+    return true
+  } catch (e) {
+    console.log("error while deleting a group", e);
+    return false
+  }
+};
+
 export const handleCreateFileInGroup = async (args: createFileInGroup) => {
   if (args?.file)
     try {
