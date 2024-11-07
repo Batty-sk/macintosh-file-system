@@ -51,7 +51,6 @@ const Folder = ({
   return (
     <div
       className="flex items-center "
-      
     >
       <div className="field-row">
         <input

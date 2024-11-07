@@ -4,7 +4,12 @@ import Folder from "./Folder";
 import { useState, useEffect } from "react";
 import AddrBar from "./AddrBar";
 import { useUser } from "@clerk/clerk-react";
-import { handleCreateFileInGroup, handleCreateGroup, handleDeleteGroup } from "../pinata";
+import {
+  handleCreateFileInGroup,
+  handleCreateGroup,
+  handleDeleteGroup,
+} from "../pinata";
+import File from "./File";
 import { useContext } from "react";
 import { F_F_Context } from "../contexts/FoldersAndFilesContext";
 import Diaglog_Box from "./Diaglog_Box";
@@ -19,19 +24,25 @@ type pathProp = {
   group_id: string;
 };
 
-type popUpProp={
-  open:boolean,
-  title:string,
-  handleCancelPopup:()=>void
-handleAccecptPopup:()=>void
-}
+type popUpProp = {
+  open: boolean;
+  title: string;
+  handleCancelPopup: () => void;
+  handleAccecptPopup: () => void;
+};
 const FolderWindow = () => {
+  // we will be rendering the files on the basis of group id.
   const { isLoaded, isSignedIn, user } = useUser();
   const [path, updatePath] = useState<pathProp>({
     path: "/home",
     group_id: "",
   });
-  const [popUp, updatePopup] = useState<popUpProp>({open:false,title:'',handleCancelPopup:()=>{},handleAccecptPopup:()=>{}});
+  const [popUp, updatePopup] = useState<popUpProp>({
+    open: false,
+    title: "",
+    handleCancelPopup: () => {},
+    handleAccecptPopup: () => {},
+  });
   const [selectedNameId, updateSelectedNameId] = useState<selectedNameIdProp>({
     Name_Id: "",
     isFolder: false,
@@ -40,7 +51,6 @@ const FolderWindow = () => {
   const [tempFolders, setFolders] = useState(Folders);
   const [tempFiles, setFiles] = useState(Files);
   const [foldersCount, updateFoldersCount] = useState(0);
-
 
   const handleSwitchPath = (folderName: string, id: string) => {
     //fetch the folders.
@@ -68,7 +78,13 @@ const FolderWindow = () => {
 
   const handleDelete = () => {
     console.log("selected Name Id", selectedNameId);
-    if (selectedNameId.Name_Id) updatePopup({open:true,title:"You Sure Wanna Delete That? This Action Is Non-reversable",handleCancelPopup:handleCancelPopup,handleAccecptPopup:handleAccecptPopup});
+    if (selectedNameId.Name_Id)
+      updatePopup({
+        open: true,
+        title: "You Sure Wanna Delete That? This Action Is Non-reversable",
+        handleCancelPopup: handleCancelPopup,
+        handleAccecptPopup: handleAccecptPopup,
+      });
   };
 
   const handleShowProp = () => {};
@@ -78,63 +94,89 @@ const FolderWindow = () => {
       const res = await handleDeleteGroup(selectedNameId.Name_Id);
       console.log("response we got", res);
       const updated_folders = tempFolders.filter(
-        (item, index) => item.id != selectedNameId.Name_Id
+        (item) => item.id != selectedNameId.Name_Id
       );
       setFolders(updated_folders);
-      updatePopup({open:false,title:'',handleCancelPopup:()=>{},handleAccecptPopup:()=>{}});
+      updatePopup({
+        open: false,
+        title: "",
+        handleCancelPopup: () => {},
+        handleAccecptPopup: () => {},
+      });
     } else {
     }
   };
 
   const handleCancelPopup = () => {
-    updatePopup({open:false,title:'',handleCancelPopup:()=>{},handleAccecptPopup:()=>{}});
+    updatePopup({
+      open: false,
+      title: "",
+      handleCancelPopup: () => {},
+      handleAccecptPopup: () => {},
+    });
   };
 
   const handleBackPath = () => {
     updatePath({ path: "/home", group_id: "" });
   };
 
-  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const MAX_FILE_SIZE = 5 * 1024 * 1024;
 
     const file = event.target.files?.[0];
 
     if (file && file.size > MAX_FILE_SIZE) {
-      updatePopup({open:true,title:"MAX_SIZE LIMIT EXCEED",handleCancelPopup:handleCancelPopup,handleAccecptPopup:handleCancelPopup})
+      updatePopup({
+        open: true,
+        title: "MAX_SIZE LIMIT EXCEED",
+        handleCancelPopup: handleCancelPopup,
+        handleAccecptPopup: handleCancelPopup,
+      });
       return;
     }
-    if(!user) // it means the user is undefined.
-        return 
-    const folder = Folders.filter((item,index)=>item.name == user.id)
-    console.log('folder',folder)
-    if(!folder.length)
-        return
-    
+    if (!user)
+      // it means the user is undefined.
+      return;
+    const folder = Folders.filter((item) => item.name == user.id);
+    console.log("folder", folder);
+    if (!folder.length) return;
+
     if (file) {
-      console.log('uploading...')
-     try{ const response = await handleCreateFileInGroup({
-        file,
-        group_name: path.path=='/home'?folder[0].id:path.group_id,
-      });
-      if(response)
-        tempFiles.push(response)
-      console.log("Upload response:", response);
-    }
-    catch(e){
-        updatePopup({title:"Error While Uploading A File. Please Try Again",open:true,handleAccecptPopup:handleCancelPopup,handleCancelPopup:handleCancelPopup})
-    }
+      console.log("uploading...");
+      try {
+        const response = await handleCreateFileInGroup({
+          file,
+          group_name: path.path == "/home" ? folder[0].id : path.group_id,
+        });
+        if (response) setFiles(prev=>[...prev,response]);
+        console.log("Upload response:", response);
+      } catch (e) {
+        updatePopup({
+          title: "Error While Uploading A File. Please Try Again",
+          open: true,
+          handleAccecptPopup: handleCancelPopup,
+          handleCancelPopup: handleCancelPopup,
+        });
+      }
     }
   };
-  
+
   useEffect(() => {
     if (path.path == "/home") {
+      const folder = Folders.filter((item) => item.name == user?.id);
+      console.log('folder',folder)
+      const Temp = Files.filter((item) => item.group_id == folder[0].id);
+      setFiles(Temp);
       setFolders(Folders);
-      setFiles(Files);
+      console.log('temp',Temp )
+      console.log('running...')
       return;
     }
     if (!path.group_id) return;
-    const Temp = tempFiles.filter((item, i) => item.group_id == path.group_id);
-    setFiles((prev) => [...prev, ...Temp]);
+    const Temp = Files.filter((item) => item.group_id == path.group_id);
+    setFiles(Temp);
     setFolders([]);
   }, [path]);
 
@@ -150,12 +192,17 @@ const FolderWindow = () => {
       <div className="p-4 flex  md:flex-row flex-col justify-between items-center">
         <div className="flex md:w-11/12 w-full md:justify-start justify-evenly">
           <div className="flex items-center btn md:p-3 p-2 w-32 ">
-            <input id="file-upload" type="file" className="hidden" onChange={handleFileChange}/>
+            <input
+              id="file-upload"
+              type="file"
+              className="hidden"
+              onChange={handleFileChange}
+            />
             <label
               htmlFor="file-upload"
               className="title text-sm cursor-pointer  "
             >
-              Upload A File{" "}
+              Upload A File
             </label>
           </div>
           <button
@@ -194,7 +241,7 @@ const FolderWindow = () => {
       </div>
       <div className="flex w-full h-full justify-between ">
         <div className="pt-5 p-8 min-w-80 w-auto md:h-3/5 h-4/5 folders overflow-auto overflow-x-hidden  mb-5">
-          {tempFolders.map((item, index) => {
+          {tempFolders.map((item) => {
             if (item.name == user?.id) {
               return null;
             }
@@ -227,6 +274,19 @@ const FolderWindow = () => {
               handleCheckOn={handleCheckOn}
               updateFoldersCount={updateFoldersCount}
               handle_P_CreateGroup={handle_P_CreateGroup}
+            />
+          ))}
+
+          {tempFiles.map((item) => (
+            <File
+              handleCheckOn={handleCheckOn}
+              id={item.id}
+              fileName={item.name}
+              mimeType={item.mime_type}
+              isChecked={
+                selectedNameId.Name_Id == item.id && !selectedNameId.isFolder
+              }
+              cid={item.cid}
             />
           ))}
           {!tempFiles.length && !tempFolders.length && !foldersCount ? (
