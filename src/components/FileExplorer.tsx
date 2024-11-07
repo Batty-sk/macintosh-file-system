@@ -1,10 +1,12 @@
-import { ReactEventHandler, useState } from "react";
+import { ReactEventHandler, useState,useEffect} from "react";
 import "../index.css";
 import DiskWindow from "./DiskWindow";
+
 import FolderWindow from "./FolderWindow";
 import { user as userImg } from "../assets";
 import { useUser } from "@clerk/clerk-react";
-
+import { SignOutButton } from "@clerk/clerk-react";
+import { useRef } from "react";
 type Prop = {
   updateOpenExplorer: React.Dispatch<React.SetStateAction<boolean>>;
 };
@@ -14,6 +16,21 @@ const FileExplorer = ({ updateOpenExplorer }: Prop) => {
   const [dragging, setDragging] = useState(false);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const { isLoaded, isSignedIn, user } = useUser();
+  const [showLogout, setShowLogout] = useState(false);
+  const profileRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event:MouseEvent) => {
+      if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
+        setShowLogout(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   // Handle mouse or touch down to start dragging
   const handleDragStart = (e: any) => {
@@ -87,10 +104,11 @@ const FileExplorer = ({ updateOpenExplorer }: Prop) => {
           <DiskWindow updateSwitchWindow={updateSwitchWindow} />
         )}
 
-        <div className="absolute bottom-1 right-2">
+        <div ref={profileRef} className="absolute bottom-1 right-2 flex flex-col items-center justify-center w-fit p-2 cursor-pointer" onClick={()=>setShowLogout(!showLogout)}>
+          {showLogout && <div className="border p-2 md:text-sm text-[10px]"> <SignOutButton/>? </div>}
           <div className="flex items-center">
             <img src={userImg} alt="" className="md:h-10 md:w-10 w-9 h-9" />
-            <h2 className="ms-1 md:text-sm text-[13px]">{user?.fullName}</h2>
+            <h2 className="ms-1 md:text-sm md:block hidden text-[13px]">{user?.username}</h2>
           </div>
         </div>
       </div>

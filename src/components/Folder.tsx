@@ -97,7 +97,7 @@ const Folder = ({
           </div>
         </>
       ) : (
-        <span className="pl-2 cursor-pointer" onClick={() => handleSwitchPath(name,id)}>{name ? name : folderName}</span>
+        <span className="pl-2 cursor-pointer" onClick={() => handleSwitchPath(name,id)}>{name ? name.split('|')[1] : folderName}</span>
       )}
     </div>
   );
