@@ -41,9 +41,13 @@ type loaderProp = {
   uploadAFile: boolean;
   createAFolder: boolean;
 };
-const FolderWindow = () => {
+type parentProps = {
+  setFilesFoldersCount:React.Dispatch<React.SetStateAction<number[]>>
+}
+
+const FolderWindow = ({setFilesFoldersCount}:parentProps) => {
   // we will be rendering the files on the basis of group id.
-  const { isLoaded, isSignedIn, user } = useUser();
+  const { user } = useUser();
   const [metaDataPopUp, updateMetaDataPopUp] = useState({
     open: false,
     data: {
@@ -69,6 +73,8 @@ const FolderWindow = () => {
   });
   const { Folders, Files, setFolders, setFiles } = useContext(F_F_Context);
   const [foldersCount, updateFoldersCount] = useState(0);
+  const [filesCount, updateFilesCount] = useState(0);
+
   const [root, setRoot] = useState<GroupResponseItem | null>(null);
   const [loader, updateLoader] = useState<loaderProp>({
     ok: false,
@@ -77,11 +83,9 @@ const FolderWindow = () => {
   });
 
   const handleShowMetaData = () => {
-    console.log('seleceted item',selectedNameId.Name_Id)
     if (!selectedNameId.Name_Id) {
       return;
     }
-    console.log('here')
     if (selectedNameId.isFolder) {
       const folder = Folders.find((item) => item.id == selectedNameId.Name_Id);
       if (folder)
@@ -95,9 +99,7 @@ const FolderWindow = () => {
           },
         });
     } else {
-      console.log('its a file')
       const file = Files.find((item) => item.id == selectedNameId.Name_Id);
-      console.log('file',file)
       if (file)
         updateMetaDataPopUp({
           open: true,
@@ -130,6 +132,15 @@ const FolderWindow = () => {
     updatePath({ path: path.path + "/" + name, group_id: id });
   };
   const handle_P_CreateGroup = async (folderName: string) => {
+    if(!folderName){
+      updatePopup({
+        open: true,
+        title: "Folder Name Can't Be Empty",
+        handleCancelPopup: handleCancelPopup,
+        handleAccecptPopup: handleCancelPopup,
+      })
+      return 
+    }
     if (user == undefined) return;
     try {
       updateLoader({ ok: false, createAFolder: true, uploadAFile: false });
@@ -221,10 +232,8 @@ const FolderWindow = () => {
     if (file) {
       const userId = user?.id || "";
       newFileName = `${userId}${file.name}`;
-      console.log("new file name", newFileName);
       renamedFile = new File([file], newFileName, { type: file.type });
 
-      console.log("original file", file, renamedFile);
     }
     if (file && file.size > MAX_FILE_SIZE) {
       updatePopup({
@@ -239,11 +248,9 @@ const FolderWindow = () => {
       // it means the user is undefined.
       return;
     const folder = Folders.filter((item) => item.name == user.id);
-    console.log("folder", folder);
     if (!folder.length) return;
 
     if (file && renamedFile) {
-      console.log("uploading...");
       updateLoader({ ok: false, createAFolder: false, uploadAFile: true });
       try {
         const response = await handleCreateFileInGroup({
@@ -282,13 +289,26 @@ const FolderWindow = () => {
     }
   };
 
+  const getFilesLengthAtCurrentPath = ()=>{
+    const files  = Files.filter(item=>item.group_id==path.group_id)
+    updateFilesCount(files.length)
+    return files.length
+  }
+
+
   useEffect(() => {
+
     const folder = Folders.filter((item) => item.name == user?.id)[0];
-    console.log("folder", folder);
     setRoot(folder);
     if (folder) updatePath({ path: "/home", group_id: folder?.id });
-    console.log("setting root", root);
+
+
   }, [user?.id]);
+
+  useEffect(()=>{
+    setFilesFoldersCount([path.path=="/home"?Folders.length-1:0,getFilesLengthAtCurrentPath()])
+
+  },[path,Folders,Files])
 
   return (
     <div className="w-full h-full relative">
@@ -371,7 +391,7 @@ const FolderWindow = () => {
         <AddrBar path={path.path} handleBackPath={handleBackPath} />
       </div>
       <div className="flex w-full h-full justify-between pe-5 ">
-        <div className="pt-5 p-8 md:min-w-80 min-w-full  md:h-3/5 h-4/5 folders overflow-auto overflow-x-hidden  mb-5">
+        <div className="pt-5 p-8 md:w-10/12 w-12/12  md:h-3/5 h-2/4  overflow-auto overflow-x-hidden  mb-5">
           {path.path == "/home" &&
             Folders.map((item) => {
               if (item.name == user?.id) {
@@ -432,8 +452,8 @@ const FolderWindow = () => {
               );
             else null;
           })}
-          {!Files.length && Folders.length == 1 && !foldersCount ? (
-            <h1 className="title md:text-3xl text-2xl">
+          {!filesCount && Folders.length > 0 && !foldersCount ? (
+            <h1 className="title md:text-3xl pt-2 text-2xl">
               No Files And Folder Found.
             </h1>
           ) : null}

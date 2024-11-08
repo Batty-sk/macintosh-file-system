@@ -11,7 +11,7 @@ const App = () => {
 
   return (  
     <F_F_Context_Wrapper>
-      <div className="h-full w-full flex flex-col justify-between relative overflow-hidden">
+      <div className="h-svh w-full flex flex-col justify-between relative overflow-hidden">
         <div className="absolute md:-right-96 -right-64 flex h-[92%] items-center -z-10">
           <img src={skull} alt="" style={{objectFit:'cover'}}   className="md:w-[800px] w-[500px]" />
         </div>
@@ -25,7 +25,7 @@ const App = () => {
           className="flex flex-col w-fit pt-8 pl-4 items-center "
           onClick={() => updateOpenExplorer(true)}
         >
-          <img src={file_explorer} alt="file explorer" height={40} width={40} className="cursor-pointer" />
+          <img src={file_explorer} alt="file explorer" className="cursor-pointer w-12 h-12" />
           <h1 className="title md:text-sm text-[12px] ">file explorer</h1>
         </div>
           {openExplorer && (

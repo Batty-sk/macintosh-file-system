@@ -40,7 +40,7 @@ export const F_F_Context = createContext<ContextProps>({
 });
 
 export const F_F_Context_Wrapper = ({ children }: ChildProp) => {
-  const { isLoaded, isSignedIn, user } = useUser();
+  const { user } = useUser();
 
   const [Folders, setFolders] = useState<GroupResponseItem[]>([]);
   const [Files, setFiles] = useState<FileListItem[]>([]);

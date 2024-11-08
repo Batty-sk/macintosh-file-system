@@ -1,5 +1,4 @@
-import React from "react";
-import { createBrowserRouter, Navigate } from "react-router-dom";
+import { createBrowserRouter } from "react-router-dom";
 import { SignedIn, SignedOut, RedirectToSignIn, SignIn } from "@clerk/clerk-react";
 import App from "../App";
 

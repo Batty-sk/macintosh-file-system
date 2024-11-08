@@ -15,7 +15,6 @@ type Props = {
 const Folder = ({
   newlyCreated,
   name,
-  userId,
   handleSwitchPath,
   isChecked,
   handleCheckOn,
@@ -23,15 +22,15 @@ const Folder = ({
   handle_P_CreateGroup,
   id,
 }: Props) => {
-  const [isNewlyCreated, updateIsNewlyCreated] = useState(!newlyCreated);
+  const [isNewlyCreated] = useState(!newlyCreated);
   const [folderName, updateFolderName] = useState("");
 
   const handleDoneEditing = async () => {
+    
       handle_P_CreateGroup(folderName);
       updateFoldersCount(0)
   };
 
-  console.log("name", name);
   const handleReset = () => {
     if(!folderName){
         updateFoldersCount(0)
@@ -42,7 +41,6 @@ const Folder = ({
   };
 
   const handleChangeEvent = () => {
-    console.log('changing ....')
     if (isChecked) {
       return ;
     }
@@ -76,6 +74,7 @@ const Folder = ({
                     updateFolderName(e.target.value);
                   }
             }
+            className="md:w-36 w-28"
           />
           <div className="flex">
             <img

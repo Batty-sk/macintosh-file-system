@@ -1,4 +1,4 @@
-import { ReactEventHandler, useState,useEffect} from "react";
+import {  useState, useEffect } from "react";
 import "../index.css";
 import DiskWindow from "./DiskWindow";
 
@@ -15,13 +15,18 @@ const FileExplorer = ({ updateOpenExplorer }: Prop) => {
   const [position, setPosition] = useState({ x: 0, y: 40 });
   const [dragging, setDragging] = useState(false);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
-  const { isLoaded, isSignedIn, user } = useUser();
+  const {  user } = useUser();
   const [showLogout, setShowLogout] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
+  const [fileFoldersCount,setFilesFoldersCount] = useState([-1,-1])
+
 
   useEffect(() => {
-    const handleClickOutside = (event:MouseEvent) => {
-      if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        profileRef.current &&
+        !profileRef.current.contains(event.target as Node)
+      ) {
         setShowLogout(false);
       }
     };
@@ -99,17 +104,36 @@ const FileExplorer = ({ updateOpenExplorer }: Prop) => {
         <div className="separator"></div>
 
         {switchWindow ? (
-          <FolderWindow />
+          <FolderWindow  setFilesFoldersCount={setFilesFoldersCount}/>
         ) : (
           <DiskWindow updateSwitchWindow={updateSwitchWindow} />
         )}
 
-        <div ref={profileRef} className="absolute bottom-1 right-2 flex flex-col items-center justify-center w-fit p-2 cursor-pointer" onClick={()=>setShowLogout(!showLogout)}>
-          {showLogout && <div className="border p-2 md:text-sm text-[10px]"> <SignOutButton/>? </div>}
+        <div
+          ref={profileRef}
+          className="absolute md:bottom-1 bottom-0 right-2 flex flex-col items-center justify-center w-fit p-2 cursor-pointer"
+          onClick={() => setShowLogout(!showLogout)}
+        >
+          {showLogout && (
+            <div className="border p-2 md:text-sm text-[10px]">
+              {" "}
+              <SignOutButton />?{" "}
+            </div>
+          )}
           <div className="flex items-center">
             <img src={userImg} alt="" className="md:h-10 md:w-10 w-9 h-9" />
-            <h2 className="ms-1 md:text-sm md:block hidden text-[13px]">{user?.username}</h2>
+            <h2 className="ms-1 md:text-sm md:block hidden text-[13px]">
+              {user?.username}
+            </h2>
           </div>
+        </div>
+
+        <div className="absolute bottom-0  left-0 flex items-center justify-evenly w-60 border-t-[1px] border-r-2  border-black z-50 p-1
+          text-sm font-light
+        ">
+          <h1 className="text-[12px] ">Files: {fileFoldersCount[1]!=-1?fileFoldersCount[1]:'/'}</h1>
+          <h1 className="text-[12px]">Folders: {fileFoldersCount[0]!=-1?fileFoldersCount[0]:'/'}</h1>
+
         </div>
       </div>
     </div>

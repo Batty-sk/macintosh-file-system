@@ -20,26 +20,22 @@ export const handleCreateGroup = async (args: createGroupProps) => {
       name: args.name,
       isPublic: true,
     });
-    console.log("response we got brou", response);
     return response;
   } catch (e) {
-    console.log("error while creating a group", e);
   }
 };
 export const handleDeleteGroup = async (GroupId: string) => {
   try {
-    const response = await pinata.groups.delete({ groupId: GroupId });
-    console.log("response we got brou", response);
+  await pinata.groups.delete({ groupId: GroupId });
     return 1;
 
   } catch (e) {
-    console.log("error while deleting a group", e);
   }
 };
 
 export const handleDeleteFile = async (groupId: string,fileId:string) => {
   try {
-    const group = await pinata.groups.removeFiles({
+    await pinata.groups.removeFiles({
       groupId:groupId,
       files: [
         fileId,
@@ -47,7 +43,6 @@ export const handleDeleteFile = async (groupId: string,fileId:string) => {
     });
     return true
   } catch (e) {
-    console.log("error while deleting a group", e);
     return false
   }
 };
@@ -58,10 +53,8 @@ export const handleCreateFileInGroup = async (args: createFileInGroup) => {
       const response = await pinata.upload
         .file(args.file)
         .group(args.group_name);
-      console.log("response we got on uploading file ", response);
       return response;
     } catch (e) {
-      console.log("error while uploading file", e);
     }
 };
 
@@ -70,10 +63,8 @@ export const handleRetrieveFiles = async (group_id: string) => {
     const response: FileListResponse = await pinata.files
       .list()
       .group(group_id);
-    console.log("response we got on retrieving the file ", response);
     return response;
   } catch (e: any) {
-    console.log("error while uploading file", e);
     throw new Error(e);
   }
 };
@@ -83,7 +74,6 @@ export const handleRetrieveGroups = async () => {
     const groups = await pinata.groups.list();
     return groups;
   } catch (e: any) {
-    console.log("error while retriving the groups.");
     throw new Error(e);
   }
 };
@@ -93,5 +83,5 @@ export const handleFilteredGroups = (
   groups: GroupResponseItem[],
   userId: string
 ) => {
-  return groups.filter((item, index) => item.name.startsWith(userId));
+  return groups.filter((item) => item.name.startsWith(userId));
 };

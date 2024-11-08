@@ -1,4 +1,3 @@
-import React from 'react'
 import { loading } from '../assets'
 
 type D_B_Props ={
