@@ -20,7 +20,6 @@ const Diaglog_Box = ({handleCancelPopup,handleAccecptPopup,title,isLoading}:D_B_
         <button className="btn" onClick={handleCancelPopup}>Cancel</button>
         <button className="btn" onClick={handleAccecptPopup}>{isLoading?<img src={loading} alt="" className='animate-spin'/>:'OK'}</button>
       </section>
-
     </div>
 
   </div>
